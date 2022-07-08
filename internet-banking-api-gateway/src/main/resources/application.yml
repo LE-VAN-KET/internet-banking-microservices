@@ -1,0 +1,65 @@
+## SECURITY BASED CONFIGURATIONS
+app:
+  config:
+    keycloak:
+      url: http://localhost:8080/auth
+      realm: internet-banking
+      client-secret: 7d5XUkss5FYtcmSccIcaljikNWN0qV3D
+      client-id: internet-banking-core-client
+
+spring:
+  application:
+    name: internet-banking-api-gateway
+
+  # API SECURITY WITH KEYCLOAK PROVIDER
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            authorization-uri: ${app.config.keycloak.url}/realms/${app.config.keycloak.realm}/protocol/openid-connect/auth
+            jwk-set-uri: ${app.config.keycloak.url}/realms/${app.config.keycloak.realm}/protocol/openid-connect/certs
+            token-uri: ${app.config.keycloak.url}/realms/${app.config.keycloak.realm}/protocol/openid-connect/token
+            user-info-authentication-method: header
+            user-info-uri: ${app.config.keycloak.url}/realms/${app.config.keycloak.realm}/protocol/openid-connect/userinfo
+            user-name-attribute: preferred_username
+        registration:
+          internet-banking-core-client:
+            authorization-grant-type: authorization_code
+            client-id: ${app.config.keycloak.client-id}
+            client-secret: ${app.config.keycloak.client-secret}
+            provider: keycloak
+            redirect-uri: http://localhost:8080/login/oauth2/code/keycloak
+            scope: openid
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${app.config.keycloak.url}/realms/${app.config.keycloak.realm}/protocol/openid-connect/certs
+
+  # configuration gateway
+  cloud:
+    gateway:
+      routes:
+        # user service
+        - id: internet-banking-user-service
+          uri: lb://internet-banking-user-service
+          predicates:
+            - Path=/user/**
+          filters:
+            - StripPrefix=1
+
+        # Fund transfer service
+        - id: internet-banking-fund-transfer-service
+          uri: lb://internet-banking-fund-transfer-service
+          predicates:
+            - Path=/fund-transfer/**
+          filters:
+            - StripPrefix=1
+
+server:
+  port: 8082
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+
