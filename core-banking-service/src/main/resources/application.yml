@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: core-banking-service
+
+  ## database connection properties
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/banking_core_service?useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false&createDatabaseIfNotExist=true
+    username: root
+    password: Ket0328560055
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # flyway
+  flyway:
+    baseline-on-migrate: false
+    enabled: false
+    locations: classpath:db/migration
+server:
+  port: 8092
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8081/eureka
+
+info:
+  app:
+    name: ${spring.application.name}
+
